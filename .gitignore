@@ -1,0 +1,7 @@
+runtime/
+# Local SWI-Prolog runtime is installed or bundled separately.
+.vscode/
+*.qlf
+*.log
+.DS_Store
+Thumbs.db

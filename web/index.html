@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Website Accessibility Adviser</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <header class="site-header">
+    <div class="wrap">
+      <p class="eyebrow">Guided WCAG 2.2 review</p>
+      <h1>Website Accessibility Adviser</h1>
+      <p class="lede">Inspect one webpage, answer the questions, and see possible issues with the reasoning behind each result.</p>
+    </div>
+  </header>
+
+  <main class="wrap" id="main">
+    <section class="notice" aria-labelledby="scope-title">
+      <h2 id="scope-title">What this review covers</h2>
+      <p>This adviser checks 20 selected WCAG 2.2 Level A and AA criteria. It uses your answers and does not inspect or change the webpage itself. “No issue reported” applies only to the question asked; it is not a claim of full accessibility or WCAG conformance.</p>
+      <p>Use <strong>Not sure</strong> whenever you cannot verify an answer. If a page feature is absent, its related checks become <strong>Not applicable</strong>.</p>
+    </section>
+
+    <form id="review-form" novalidate>
+      <section class="section" aria-labelledby="features-title">
+        <div class="section-heading">
+          <div><p class="step">Step 1</p><h2 id="features-title">Describe the webpage</h2></div>
+          <p>These answers decide which checks apply.</p>
+        </div>
+        <div id="features" class="question-grid"><p>Loading questions…</p></div>
+      </section>
+
+      <section class="section" aria-labelledby="checks-title">
+        <div class="section-heading">
+          <div><p class="step">Step 2</p><h2 id="checks-title">Check what you observed</h2></div>
+          <p>Answer Yes only when you have checked the page.</p>
+        </div>
+        <div id="checks"><p>Loading checks…</p></div>
+      </section>
+
+      <div class="form-actions">
+        <button class="primary" type="submit" id="evaluate-button">Show results</button>
+        <button class="secondary" type="reset">Clear answers</button>
+      </div>
+    </form>
+
+    <section id="results" class="section results hidden" aria-labelledby="results-title" aria-live="polite">
+      <div class="section-heading"><div><p class="step">Step 3</p><h2 id="results-title">Your results</h2></div></div>
+      <div id="summary"></div>
+      <div id="findings"></div>
+
+      <div class="goal-panel">
+        <h3>Ask why a criterion was flagged</h3>
+        <p>This runs a goal-directed, backward-chaining check using your answers.</p>
+        <div class="goal-controls">
+          <label for="goal-select">Criterion to prove</label>
+          <select id="goal-select"></select>
+          <button class="secondary" type="button" id="prove-button">Check this goal</button>
+        </div>
+        <div id="proof" aria-live="polite"></div>
+      </div>
+
+      <details class="trace-panel">
+        <summary>Show the forward-chaining rule trace</summary>
+        <ol id="trace"></ol>
+      </details>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">Rules reference the <a href="https://www.w3.org/TR/WCAG22/">W3C Web Content Accessibility Guidelines 2.2</a>.</div>
+  </footer>
+</body>
+</html>
