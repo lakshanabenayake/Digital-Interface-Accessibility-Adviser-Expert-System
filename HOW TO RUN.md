@@ -1,19 +1,6 @@
-# Digital Interface Accessibility Adviser - User Manual
+# HOW TO RUN
 
-## 1. Purpose
-
-The Digital Interface Accessibility Adviser is a read-only expert system for reviewing a website, desktop application, or mobile application. A reviewer answers questions about an interface. The system then applies its Prolog facts and rules and reports:
-
-- possible accessibility issues;
-- checks that do not apply;
-- checks that need more investigation;
-- suggested corrective actions;
-- the rules and answers used to reach each conclusion; and
-- links to the relevant W3C guidance.
-
-The adviser does not change the interface being reviewed and does not claim full accessibility conformance.
-
-## 2. Required Software
+## 1. Required Software
 
 - SWI-Prolog 9.0 or later: <https://www.swi-prolog.org/Download.html>
 - A modern browser such as Firefox, Chrome, or Edge
@@ -21,7 +8,7 @@ The adviser does not change the interface being reviewed and does not claim full
 
 The required HTTP, JSON, and testing libraries are included with SWI-Prolog. No database, Node.js package, or internet connection is required to run the system. Internet access is useful for opening the reference links shown in the results.
 
-## 3. Installation
+## 2. Installation
 
 1. Download and install SWI-Prolog.
 2. When the installer offers the option, allow it to add `swipl` to the system PATH.
@@ -37,7 +24,7 @@ swipl --version
 
 If this prints a version number, the installation is ready.
 
-## 4. Starting the System
+## 3. Starting the System
 
 ### Windows PowerShell
 
@@ -69,7 +56,7 @@ Keep the terminal open while using the system. Open this address in a browser:
 
 Press **Ctrl+C** in the terminal to stop the server.
 
-## 5. Using Another Port
+## 4. Using Another Port
 
 If port 8080 is already being used, choose another port.
 
@@ -87,7 +74,7 @@ bash run.sh 8081
 
 Then open <http://localhost:8081/>.
 
-## 6. How to Use the Adviser
+## 5. How to Use the Adviser
 
 1. Start the system and open its local browser address.
 2. Under **Choose an interface type**, select Website/Web application, Desktop application, or Mobile application.
@@ -101,7 +88,7 @@ Then open <http://localhost:8081/>.
 10. To examine backward chaining, choose a criterion under **Ask why a criterion was flagged** and select **Check this goal**.
 11. Select **Clear answers** before beginning a different review.
 
-## 7. Understanding the Results
+## 6. Understanding the Results
 
 | Result | Meaning |
 | --- | --- |
@@ -112,7 +99,7 @@ Then open <http://localhost:8081/>.
 
 Each possible issue includes a rule identifier, reasoning, a suggested action, and a source. These results support a preliminary review. They do not replace a complete accessibility audit.
 
-## 8. Example
+## 7. Example
 
 Review a desktop application with interactive controls:
 
@@ -134,7 +121,7 @@ Suggested action: Provide keyboard operation for every applicable function.
 
 The forward trace shows how the observations produced the finding. A backward proof for criterion 2.1.1 shows the interface type, feature conditions, platform support, and failing answer that support rule `r09`.
 
-## 9. Running the Automated Tests
+## 8. Running the Automated Tests
 
 ### Windows PowerShell
 
@@ -150,7 +137,7 @@ bash test.sh
 
 The successful test run reports 18 passed test definitions. The tests cover all 20 issue rules, fact and rule counts, applicability, uncertain answers, forward chaining, backward chaining, and source identifiers.
 
-## 10. Troubleshooting
+## 9. Troubleshooting
 
 ### `swipl` is not recognized or command not found
 
@@ -166,7 +153,7 @@ swipl -q -s web_server.pl -- 8080
 
 ### The terminal reports a socket or port error
 
-Choose a different port as described in Section 5.
+Choose a different port as described in Section 4.
 
 ### The browser cannot connect
 
@@ -176,6 +163,6 @@ Confirm that the terminal server is still running and that the browser uses the 
 
 Confirm that the project was copied completely and that the `web/` folder remains beside `web_server.pl`.
 
-## 11. Closing the System
+## 10. Closing the System
 
 Return to the terminal running the server and press **Ctrl+C**. The browser tab can then be closed.

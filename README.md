@@ -12,7 +12,7 @@ Accessibility problems can be overlooked when an interface appears usable to its
 
 The rules are based on **20 selected Level A and AA criteria** in [WCAG 2.2](https://www.w3.org/TR/WCAG22/). The [W3C WCAG2ICT Group Note](https://www.w3.org/TR/wcag2ict-22/) guides how those criteria are interpreted for non-web software. WCAG2ICT is informative guidance, not a separate conformance standard. Every rule and its source are listed in [RULES_AND_SOURCES.md](RULES_AND_SOURCES.md).
 
-Complete installation and operating instructions are available in [USER_MANUAL.md](USER_MANUAL.md).
+Complete installation and operating instructions are available in [HOW TO RUN.md](HOW%20TO%20RUN.md).
 
 ## What does the system do?
 
@@ -81,7 +81,7 @@ The 18 automated tests check all 20 issue rules individually, unknown answers, f
 | `web/` | Browser questionnaire and result view. |
 | `tests.pl` | Automated test cases. |
 | `RULES_AND_SOURCES.md` | Rule-to-source mapping and interpretation notes. |
-| `USER_MANUAL.md` | Separate installation, operation, example, testing, and troubleshooting guide. |
+| `HOW TO RUN.md` | Separate installation, operation, example, testing, and troubleshooting guide. |
 | `REPORT.md` | Assignment report, architecture, knowledge engineering, and test evidence. |
 | `run.ps1`, `test.ps1` | Windows PowerShell launchers. |
 | `run.sh`, `test.sh` | Git Bash, macOS, and Linux launchers. |
