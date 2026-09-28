@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Website Accessibility Adviser</title>
+  <title>Digital Interface Accessibility Adviser</title>
   <link rel="stylesheet" href="/style.css">
   <script src="/app.js" defer></script>
 </head>
@@ -11,23 +11,37 @@
   <a class="skip-link" href="#main">Skip to main content</a>
   <header class="site-header">
     <div class="wrap">
-      <p class="eyebrow">Guided WCAG 2.2 review</p>
-      <h1>Website Accessibility Adviser</h1>
-      <p class="lede">Inspect one webpage, answer the questions, and see possible issues with the reasoning behind each result.</p>
+      <p class="eyebrow">Guided digital accessibility review</p>
+      <h1>Digital Interface Accessibility Adviser</h1>
+      <p class="lede">Review one website, desktop app, or mobile app and see possible issues with the reasoning behind each result.</p>
     </div>
   </header>
 
   <main class="wrap" id="main">
     <section class="notice" aria-labelledby="scope-title">
       <h2 id="scope-title">What this review covers</h2>
-      <p>This adviser checks 20 selected WCAG 2.2 Level A and AA criteria. It uses your answers and does not inspect or change the webpage itself. “No issue reported” applies only to the question asked; it is not a claim of full accessibility or WCAG conformance.</p>
-      <p>Use <strong>Not sure</strong> whenever you cannot verify an answer. If a page feature is absent, its related checks become <strong>Not applicable</strong>.</p>
+      <p>This adviser checks 20 selected WCAG 2.2 Level A and AA criteria. For desktop and mobile software it uses W3C WCAG2ICT interpretation guidance. It uses your answers and does not inspect or change the interface. “No issue reported” applies only to the question asked; it is not a claim of full accessibility or WCAG conformance.</p>
+      <p>Use <strong>Not sure</strong> whenever you cannot verify an answer. If a feature is absent, its related checks become <strong>Not applicable</strong>. Physical hardware controls are outside this review.</p>
     </section>
 
     <form id="review-form" novalidate>
+      <section class="section" aria-labelledby="type-title">
+        <div class="section-heading">
+          <div><p class="step">Step 1</p><h2 id="type-title">Choose the interface</h2></div>
+          <p>Review one interface at a time.</p>
+        </div>
+        <div class="question type-question">
+          <label class="question-label" for="interface-type">Interface type</label>
+          <p class="question-help" id="interface-type-help">Choose a website or web app, desktop application, or mobile application. This affects which checks apply.</p>
+          <select class="answer-select" id="interface-type" name="interface_type" data-key="interface_type" aria-describedby="interface-type-help">
+            <option value="unknown">Not sure</option>
+          </select>
+        </div>
+      </section>
+
       <section class="section" aria-labelledby="features-title">
         <div class="section-heading">
-          <div><p class="step">Step 1</p><h2 id="features-title">Describe the webpage</h2></div>
+          <div><p class="step">Step 2</p><h2 id="features-title">Describe the interface</h2></div>
           <p>These answers decide which checks apply.</p>
         </div>
         <div id="features" class="question-grid"><p>Loading questions…</p></div>
@@ -35,8 +49,8 @@
 
       <section class="section" aria-labelledby="checks-title">
         <div class="section-heading">
-          <div><p class="step">Step 2</p><h2 id="checks-title">Check what you observed</h2></div>
-          <p>Answer Yes only when you have checked the page.</p>
+          <div><p class="step">Step 3</p><h2 id="checks-title">Check what you observed</h2></div>
+          <p>Answer Yes only when you have checked the interface.</p>
         </div>
         <div id="checks"><p>Loading checks…</p></div>
       </section>
@@ -48,7 +62,7 @@
     </form>
 
     <section id="results" class="section results hidden" aria-labelledby="results-title" aria-live="polite">
-      <div class="section-heading"><div><p class="step">Step 3</p><h2 id="results-title">Your results</h2></div></div>
+      <div class="section-heading"><div><p class="step">Step 4</p><h2 id="results-title">Your results</h2></div></div>
       <div id="summary"></div>
       <div id="findings"></div>
 
@@ -71,7 +85,7 @@
   </main>
 
   <footer class="site-footer">
-    <div class="wrap">Rules reference the <a href="https://www.w3.org/TR/WCAG22/">W3C Web Content Accessibility Guidelines 2.2</a>.</div>
+    <div class="wrap">Rules reference <a href="https://www.w3.org/TR/WCAG22/">W3C WCAG 2.2</a>; native app interpretation follows <a href="https://www.w3.org/TR/wcag2ict-22/">W3C WCAG2ICT</a>.</div>
   </footer>
 </body>
 </html>

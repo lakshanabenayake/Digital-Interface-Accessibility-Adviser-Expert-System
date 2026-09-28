@@ -1,29 +1,43 @@
-:- module(knowledge_base, [criterion/11, feature/3, threshold/2, knowledge_counts/3]).
+:- module(knowledge_base, [criterion/11, feature/3, threshold/2,
+                           interface_type/2, extra_gate/3, knowledge_counts/3]).
 
-% Each criterion is a sourced domain fact:
+% Each criterion is a sourced domain fact for a web, desktop, or mobile
+% software interface:
 % criterion(Key, WCAGNumber, Title, Level, Group, RequiredFeatures,
 %           AnswerKey, Question, Help, SuggestedAction, WCAGFragment).
 % A "no" answer to a criterion question is evaluated by its named rule in
-% inference_engine.pl. These are selected checks, not full WCAG conformance.
+% inference_engine.pl. WCAG2ICT guides non-web interpretation. These selected
+% checks are not full WCAG conformance or a hardware accessibility review.
+
+interface_type(web, 'Website or web app').
+interface_type(desktop, 'Desktop application').
+interface_type(mobile, 'Mobile application').
+
+% Additional gates apply only to native desktop/mobile software. For web
+% content, the browser supplies the relevant keyboard and title facilities.
+extra_gate(c211, native, keyboard_service).
+extra_gate(c212, native, keyboard_service).
+extra_gate(c247, native, keyboard_service).
+extra_gate(c242, native, title_property_supported).
 
 criterion(c111, '1.1.1', 'Non-text Content', 'A', 'Content',
           [informative_images], alt_text,
-          'Does each informative image or other non-text item have an equivalent text alternative?',
-          'Exclude purely decorative images. Inspect the alternative text for meaning, not merely its presence.',
+          'Does each informative image, icon, or other non-text item have an equivalent text alternative?',
+          'Exclude purely decorative items. Check the meaning exposed to assistive technology, not merely whether a label exists.',
           'Add an equivalent text alternative to each informative non-text item.',
           'non-text-content').
 
 criterion(c131, '1.3.1', 'Info and Relationships', 'A', 'Content',
           [visual_structure], programmatic_structure,
-          'Can visual structure and relationships be determined from the markup or available text?',
-          'Check headings, lists, labels, and table relationships, not only their visual appearance.',
-          'Use semantic markup or text to convey the same structure and relationships.',
+          'Can visual structure and relationships be determined programmatically or from available text?',
+          'Check headings, groups, labels, lists, and table relationships, not only their visual appearance.',
+          'Use semantic markup, platform accessibility information, or text to convey the structure and relationships.',
           'info-and-relationships').
 
 criterion(c133, '1.3.3', 'Sensory Characteristics', 'A', 'Content',
           [instructions], sensory_independent,
           'Can users follow the instructions without relying only on shape, colour, size, position, or sound?',
-          'For example, "press the green button on the right" needs another identifying cue.',
+          'For example, "press the green button on the right" needs another identifying cue in a web, desktop, or mobile interface.',
           'Identify controls and information with text or another non-sensory cue.',
           'sensory-characteristics').
 
@@ -43,15 +57,15 @@ criterion(c143, '1.4.3', 'Contrast (Minimum)', 'AA', 'Presentation',
 
 criterion(c144, '1.4.4', 'Resize Text', 'AA', 'Presentation',
           [text_content], text_resizes,
-          'Can text be enlarged to 200% without loss of content or functionality?',
-          'WCAG excludes captions and images of text from this criterion.',
-          'Allow text to enlarge to 200% without clipping or loss of function.',
+          'Can text enlarge without loss of content or functionality, to 200% or to the platform-supported limit?',
+          'For web content use 200%. WCAG2ICT recommends that native software support platform text sizing where its limit is lower. Captions and images of text are excluded.',
+          'Support the applicable text enlargement or platform text settings without clipping or loss of function.',
           'resize-text').
 
 criterion(c1410, '1.4.10', 'Reflow', 'AA', 'Presentation',
           [], reflow_ok,
-          'Does applicable content reflow without two-dimensional scrolling at 320 CSS pixels wide (or 256 CSS pixels high for horizontal content)?',
-          'Some content requires two-dimensional layout for meaning, such as certain data tables.',
+          'When the view is narrowed or scaled, does applicable content remain usable without two-dimensional scrolling?',
+          'Test 320 CSS-pixel equivalent width (or 256 height for horizontal content) when supported; otherwise use the nearest supported size. Layouts needing two dimensions for meaning are excepted.',
           'Adapt the layout so applicable content reflows without losing information or function.',
           'reflow').
 
@@ -64,36 +78,36 @@ criterion(c1411, '1.4.11', 'Non-text Contrast', 'AA', 'Presentation',
 
 criterion(c211, '2.1.1', 'Keyboard', 'A', 'Interaction',
           [interactive_controls], keyboard_operable,
-          'Can all applicable page functions be operated through a keyboard interface?',
-          'Test menus, buttons, dialogs, and other custom controls without a mouse.',
+          'Can all applicable interface functions be operated through a keyboard interface?',
+          'Test buttons, menus, and dialogs. For native software this check applies when the platform provides a device-independent keyboard service.',
           'Provide keyboard operation for every applicable function.',
           'keyboard').
 
 criterion(c212, '2.1.2', 'No Keyboard Trap', 'A', 'Interaction',
           [focusable_controls], focus_can_leave,
-          'Can keyboard focus leave every component using the keyboard?',
+          'Can keyboard focus leave every interface component using the keyboard?',
           'If a special method is needed to leave a component, the user must be told how.',
           'Remove the keyboard trap or clearly explain the required exit method.',
           'no-keyboard-trap').
 
-criterion(c242, '2.4.2', 'Page Titled', 'A', 'Navigation',
-          [], page_title_descriptive,
-          'Does the page have a title that describes its topic or purpose?',
-          'Inspect the browser tab or the document title.',
-          'Give the page a descriptive document title.',
+criterion(c242, '2.4.2', 'Page or View Titled', 'A', 'Navigation',
+          [], view_title_descriptive,
+          'Does the page, window, or screen have a programmatic title that describes its topic or purpose?',
+          'For web, inspect the page title. For native software, this applies where the platform supports a title property for windows or screens.',
+          'Give the page, window, or screen a descriptive programmatic title.',
           'page-titled').
 
 criterion(c243, '2.4.3', 'Focus Order', 'A', 'Navigation',
           [focusable_controls], focus_order_ok,
-          'Does the keyboard focus order preserve meaning and operability?',
-          'Tab through the page and compare focus order with the intended reading and task order.',
-          'Arrange keyboard focus in a sequence that preserves meaning and operation.',
+          'Does sequential focus order preserve meaning and operability?',
+          'Use keyboard or assistive-technology focus navigation as supported by the interface.',
+          'Arrange focus in a sequence that preserves meaning and operation.',
           'focus-order').
 
 criterion(c244, '2.4.4', 'Link Purpose (In Context)', 'A', 'Navigation',
           [links], link_purpose_clear,
-          'Can users determine each link\'s purpose from its text or its programmatically determined context?',
-          'Repeated "click here" links may need clearer context.',
+          'Can users determine each hyperlink-style control\'s purpose from its text or programmatically determined context?',
+          'In native software, this applies to controls that behave like hypertext links.',
           'Use link text or associated context that identifies each link\'s purpose.',
           'link-purpose-in-context').
 
@@ -107,7 +121,7 @@ criterion(c246, '2.4.6', 'Headings and Labels', 'AA', 'Navigation',
 criterion(c247, '2.4.7', 'Focus Visible', 'AA', 'Navigation',
           [focusable_controls], focus_visible,
           'Is the keyboard focus indicator visible when navigating controls?',
-          'Tab through the page and look for a visible focus indicator.',
+          'Use a keyboard interface to inspect the visible focus indicator. For native software, this check requires platform keyboard support.',
           'Provide a visible keyboard focus indicator.',
           'focus-visible').
 
@@ -118,30 +132,30 @@ criterion(c253, '2.5.3', 'Label in Name', 'A', 'Interaction',
           'Include the visible label text in the control\'s accessible name.',
           'label-in-name').
 
-criterion(c311, '3.1.1', 'Language of Page', 'A', 'Language and forms',
-          [], page_language_set,
-          'Can software determine the default human language of the page?',
-          'For an HTML page, check that the document language is correctly identified.',
-          'Identify the page\'s default human language in its markup.',
+criterion(c311, '3.1.1', 'Interface Language', 'A', 'Language and forms',
+          [], interface_language_exposed,
+          'Can software determine the default human language of the interface?',
+          'For web, inspect the document language. For native software, inspect the platform locale or an accessibility-supported language method.',
+          'Expose the interface\'s default human language through an appropriate platform or markup method.',
           'language-of-page').
 
 criterion(c331, '3.3.1', 'Error Identification', 'A', 'Language and forms',
           [auto_detected_errors], errors_identified,
-          'When the page detects an input error, does it identify the affected item and describe the error in text?',
+          'When the interface detects an input error, does it identify the affected item and describe the error in text?',
           'This applies only when an input error is automatically detected.',
           'Identify the affected input and describe its error in text.',
           'error-identification').
 
 criterion(c332, '3.3.2', 'Labels or Instructions', 'A', 'Language and forms',
           [input_fields], inputs_labelled,
-          'Are labels or instructions provided wherever the page requires user input?',
+          'Are labels or instructions provided wherever the interface requires user input?',
           'Test each field or other user-input control.',
           'Provide labels or instructions for required user input.',
           'labels-or-instructions').
 
 criterion(c333, '3.3.3', 'Error Suggestion', 'AA', 'Language and forms',
           [auto_detected_errors, correction_known, suggestion_safe], correction_suggested,
-          'When a known, safe correction exists for a detected error, does the page suggest it?',
+          'When a known, safe correction exists for a detected error, does the interface suggest it?',
           'WCAG permits an exception when a suggestion would jeopardize security or the purpose of the content.',
           'Offer a known correction suggestion when it is safe and appropriate.',
           'error-suggestion').
@@ -155,39 +169,45 @@ threshold(reflow_width_css_pixels, 320).
 threshold(reflow_height_css_pixels, 256).
 
 feature(informative_images, 'Informative non-text content',
-        'The page contains an image, icon, chart, or other non-text item that conveys information.').
+        'The interface contains an image, icon, chart, or other non-text item that conveys information.').
 feature(visual_structure, 'Visual structure or relationships',
-        'The page conveys structure through visual formatting, headings, tables, lists, or labels.').
+        'The interface conveys structure through visual formatting, headings, tables, lists, groups, or labels.').
 feature(instructions, 'Instructions',
-        'The page gives instructions for understanding content or operating controls.').
+        'The interface gives instructions for understanding content or operating controls.').
 feature(colour_conveys_information, 'Colour conveys information',
-        'The page uses colour to indicate status, an action, a distinction, or required information.').
+        'The interface uses colour to indicate status, an action, a distinction, or required information.').
 feature(text_content, 'Text content',
-        'The page has text to evaluate for contrast and resizing.').
+        'The interface has text to evaluate for contrast and resizing.').
 feature(visual_controls, 'Visual controls or meaningful graphics',
-        'The page has visible controls, states, icons, or graphical information that needs contrast.').
+        'The interface has visible controls, states, icons, or graphical information that needs contrast.').
 feature(interactive_controls, 'Interactive functions',
-        'The page has menus, buttons, dialogs, or other interactive functions.').
-feature(focusable_controls, 'Keyboard-focusable controls',
-        'The page has controls or links that receive keyboard focus.').
-feature(links, 'Links',
-        'The page contains links.').
+        'The interface has menus, buttons, dialogs, or other interactive functions.').
+feature(focusable_controls, 'Sequentially focusable controls',
+        'The interface has controls that receive sequential keyboard or assistive-technology focus.').
+feature(links, 'Hyperlink-style controls',
+        'The interface contains links or controls that behave like hypertext links.').
 feature(headings_or_labels, 'Headings or labels',
-        'The page contains headings or visible labels.').
+        'The interface contains headings or visible labels.').
 feature(visibly_labelled_controls, 'Controls with visible text labels',
         'At least one control has a visible label containing text.').
 feature(auto_detected_errors, 'Automatically detected form errors',
-        'The page can automatically detect an input error.').
+        'The interface can automatically detect an input error.').
 feature(input_fields, 'User-input fields',
-        'The page asks the user to enter information.').
+        'The interface asks the user to enter information.').
 feature(correction_known, 'Known correction suggestions',
         'A useful suggestion for correcting a detected error is known.').
 feature(suggestion_safe, 'Suggestions are safe and appropriate',
         'Giving the correction would not jeopardize security or the purpose of the content.').
+feature(keyboard_service, 'Platform keyboard service',
+        'For a native app, the platform supplies device-independent keyboard input to this software.').
+feature(title_property_supported, 'Platform title property',
+        'For a native app, the platform supports a programmatic title or name for windows or screens.').
 
 knowledge_counts(Criteria, DomainFacts, IssueRules) :-
     aggregate_all(count, criterion(_,_,_,_,_,_,_,_,_,_,_), Criteria),
     aggregate_all(count, feature(_,_,_), FeatureFacts),
     aggregate_all(count, threshold(_,_), ThresholdFacts),
-    DomainFacts is Criteria + FeatureFacts + ThresholdFacts,
+    aggregate_all(count, interface_type(_,_), Types),
+    aggregate_all(count, extra_gate(_,_,_), Gates),
+    DomainFacts is Criteria + FeatureFacts + ThresholdFacts + Types + Gates,
     IssueRules = Criteria.

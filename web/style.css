@@ -36,6 +36,7 @@ a:hover { color: var(--brand-dark); }
 .step { font-size: .78rem; text-transform: uppercase; letter-spacing: .1em; font-weight: 750; color: var(--brand); margin: 0; }
 .question-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr)); gap: 1rem; }
 .question { padding: 1rem; border: 1px solid #d1dce6; border-radius: .55rem; background: #fbfdff; }
+.type-question { max-width: 34rem; }
 .question-label { display: block; font-weight: 680; }
 .question-help { margin: .45rem 0 .8rem; color: var(--muted); font-size: .94rem; }
 .answer-select, .goal-controls select { min-height: 2.6rem; width: 100%; border: 1.5px solid #758ba0; border-radius: .35rem; background: white; color: var(--ink); padding: .3rem .55rem; font: inherit; }
@@ -63,7 +64,8 @@ button:disabled { opacity: .6; cursor: wait; }
 .needs_review .status-badge { color: var(--review); }
 .no_issue_reported .status-badge { color: var(--good); }
 .finding p { margin: .65rem 0; }
-.source-link { font-weight: 650; }
+.source-link, .guidance-link { font-weight: 650; }
+.guidance-link { display: block; margin-top: .35rem; }
 .goal-panel, .trace-panel { border-top: 1px solid #d9e2ea; margin-top: 1.7rem; padding-top: 1.2rem; }
 .goal-panel h3 { margin: 0 0 .2rem; }
 .goal-panel p { margin-top: .3rem; }

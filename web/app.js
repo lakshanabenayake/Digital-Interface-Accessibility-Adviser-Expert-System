@@ -1,6 +1,7 @@
 "use strict";
 
 const featureHost = document.getElementById("features");
+const interfaceTypeSelect = document.getElementById("interface-type");
 const checkHost = document.getElementById("checks");
 const form = document.getElementById("review-form");
 const resultsSection = document.getElementById("results");
@@ -41,6 +42,10 @@ function createQuestion(id, labelText, helpText, key, kind) {
 
 function renderKnowledge(data) {
   knowledge = data;
+  interfaceTypeSelect.replaceChildren(new Option("Not sure", "unknown"));
+  for (const type of data.interface_types) {
+    interfaceTypeSelect.add(new Option(type.label, type.key));
+  }
   featureHost.replaceChildren();
   checkHost.replaceChildren();
   goalSelect.replaceChildren();
@@ -60,6 +65,7 @@ function renderKnowledge(data) {
       const box = createQuestion(`check-${item.key}`, `${item.number} ${item.title}: ${item.question}`,
         item.help, item.check_key, "check");
       box.dataset.gates = item.gates.join(",");
+      box.dataset.nativeGates = item.native_gates.join(",");
       const note = element("p", "applicability-note");
       note.hidden = true;
       box.append(note);
@@ -70,16 +76,29 @@ function renderKnowledge(data) {
     checkHost.append(fieldset);
   }
   featureHost.addEventListener("change", updateApplicability);
+  interfaceTypeSelect.addEventListener("change", updateApplicability);
   updateApplicability();
 }
 
 function updateApplicability() {
   const answers = collectAnswers();
+  const isNative = answers.interface_type === "desktop" || answers.interface_type === "mobile";
+  for (const key of ["keyboard_service", "title_property_supported"]) {
+    const control = featureHost.querySelector(`[data-key="${key}"]`);
+    if (control) control.closest(".question").hidden = !isNative;
+  }
   for (const box of checkHost.querySelectorAll(".question")) {
     const gates = box.dataset.gates ? box.dataset.gates.split(",") : [];
+    if (isNative) {
+      gates.push(...(box.dataset.nativeGates ? box.dataset.nativeGates.split(",") : []));
+    }
     const missing = gates.find(key => answers[key] === "no");
     const note = box.querySelector(".applicability-note");
-    if (missing) {
+    if (answers.interface_type === "unknown") {
+      note.textContent = "Choose an interface type to evaluate this check.";
+      note.hidden = false;
+      box.classList.remove("not-applicable-question");
+    } else if (missing) {
       const feature = knowledge.features.find(item => item.key === missing);
       note.textContent = `Not applicable based on your answer to “${feature.label}”.`;
       note.hidden = false;
@@ -127,8 +146,11 @@ function renderResults(data) {
   proofHost.replaceChildren();
 
   const counts = data.counts;
+  const selectedType = knowledge.interface_types.find(type => type.key === lastAnswers.interface_type);
+  const issueWord = counts.possible_issue === 1 ? "possible issue" : "possible issues";
   const summary = element("p", "summary-text",
-    `${counts.possible_issue} possible issues · ${counts.no_issue_reported} with no issue reported · ` +
+    `${selectedType ? selectedType.label + " · " : "Choose an interface type · "}` +
+    `${counts.possible_issue} ${issueWord} · ${counts.no_issue_reported} with no issue reported · ` +
     `${counts.not_applicable} not applicable · ${counts.needs_review} needing review`);
   summaryHost.append(summary);
 
@@ -148,6 +170,13 @@ function renderResults(data) {
     source.target = "_blank";
     source.rel = "noopener noreferrer";
     article.append(source);
+    if (item.guidance) {
+      const guidance = element("a", "guidance-link", "How W3C applies this to non-web software");
+      guidance.href = item.guidance;
+      guidance.target = "_blank";
+      guidance.rel = "noopener noreferrer";
+      article.append(guidance);
+    }
     findingsHost.append(article);
   }
 
@@ -170,7 +199,7 @@ form.addEventListener("submit", async event => {
     const data = await postJson("/api/evaluate", { answers: lastAnswers });
     renderResults(data);
   } catch (error) {
-    summaryHost.textContent = `Could not evaluate this page: ${error.message}`;
+    summaryHost.textContent = `Could not evaluate this interface: ${error.message}`;
     resultsSection.classList.remove("hidden");
   } finally {
     button.disabled = false;

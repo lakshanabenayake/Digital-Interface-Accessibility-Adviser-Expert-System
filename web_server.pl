@@ -28,6 +28,7 @@ javascript(Request) :- web_file('app.js', Path), http_reply_file(Path, [unsafe(t
 stylesheet(Request) :- web_file('style.css', Path), http_reply_file(Path, [unsafe(true)], Request).
 
 knowledge_api(_Request) :-
+    findall(_{key:Type,label:Label}, interface_type(Type,Label), InterfaceTypes),
     findall(Item,
             ( feature(Key, Label, Help),
               Item = _{key:Key, label:Label, help:Help} ),
@@ -35,14 +36,17 @@ knowledge_api(_Request) :-
     findall(Item,
             ( criterion(Key, Number, Title, Level, Group, Gates, CheckKey,
                         Question, Help, _Advice, Fragment),
+              findall(NativeGate, extra_gate(Key,native,NativeGate), NativeGates),
               format(string(Source), 'https://www.w3.org/TR/WCAG22/#~w', [Fragment]),
               Item = _{key:Key, number:Number, title:Title, level:Level,
-                       group:Group, gates:Gates, check_key:CheckKey,
+                       group:Group, gates:Gates, native_gates:NativeGates,
+                       check_key:CheckKey,
                        question:Question, help:Help, source:Source} ),
             Criteria),
     knowledge_counts(CriteriaCount, DomainFacts, _),
     issue_rule_count(IssueRules),
-    reply_json_dict(_{features:Features, criteria:Criteria,
+    reply_json_dict(_{interface_types:InterfaceTypes,
+                      features:Features, criteria:Criteria,
                       knowledge:_{criteria:CriteriaCount,
                                   domain_facts:DomainFacts,
                                   issue_rules:IssueRules}}).
@@ -80,7 +84,7 @@ main :-
     ( Arguments = [PortText|_], catch(atom_number(PortText, Port), _, fail)
     -> true ; Port = 8080 ),
     start_server(Port),
-    format('Website Accessibility Adviser: http://localhost:~w/~n', [Port]),
+    format('Digital Interface Accessibility Adviser: http://localhost:~w/~n', [Port]),
     format('Press Ctrl+C to stop.~n'),
     thread_get_message(stop).
 

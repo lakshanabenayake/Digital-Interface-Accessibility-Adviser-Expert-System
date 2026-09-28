@@ -32,8 +32,8 @@ issue_rule(r09, c211, F, [applicable(c211), obs(keyboard_operable,no)]) :-
     memberchk(applicable(c211), F), memberchk(obs(keyboard_operable,no), F).
 issue_rule(r10, c212, F, [applicable(c212), obs(focus_can_leave,no)]) :-
     memberchk(applicable(c212), F), memberchk(obs(focus_can_leave,no), F).
-issue_rule(r11, c242, F, [applicable(c242), obs(page_title_descriptive,no)]) :-
-    memberchk(applicable(c242), F), memberchk(obs(page_title_descriptive,no), F).
+issue_rule(r11, c242, F, [applicable(c242), obs(view_title_descriptive,no)]) :-
+    memberchk(applicable(c242), F), memberchk(obs(view_title_descriptive,no), F).
 issue_rule(r12, c243, F, [applicable(c243), obs(focus_order_ok,no)]) :-
     memberchk(applicable(c243), F), memberchk(obs(focus_order_ok,no), F).
 issue_rule(r13, c244, F, [applicable(c244), obs(link_purpose_clear,no)]) :-
@@ -44,8 +44,8 @@ issue_rule(r15, c247, F, [applicable(c247), obs(focus_visible,no)]) :-
     memberchk(applicable(c247), F), memberchk(obs(focus_visible,no), F).
 issue_rule(r16, c253, F, [applicable(c253), obs(name_contains_label,no)]) :-
     memberchk(applicable(c253), F), memberchk(obs(name_contains_label,no), F).
-issue_rule(r17, c311, F, [applicable(c311), obs(page_language_set,no)]) :-
-    memberchk(applicable(c311), F), memberchk(obs(page_language_set,no), F).
+issue_rule(r17, c311, F, [applicable(c311), obs(interface_language_exposed,no)]) :-
+    memberchk(applicable(c311), F), memberchk(obs(interface_language_exposed,no), F).
 issue_rule(r18, c331, F, [applicable(c331), obs(errors_identified,no)]) :-
     memberchk(applicable(c331), F), memberchk(obs(errors_identified,no), F).
 issue_rule(r19, c332, F, [applicable(c332), obs(inputs_labelled,no)]) :-
@@ -66,7 +66,22 @@ pair_observation(Key-Value, obs(Key, Answer)) :-
     ( Value == yes ; Value == "yes" ), !, Answer = yes.
 pair_observation(Key-Value, obs(Key, Answer)) :-
     ( Value == no ; Value == "no" ), !, Answer = no.
+pair_observation(interface_type-Value, obs(interface_type, Answer)) :-
+    ( Value == web ; Value == "web" ), !, Answer = web.
+pair_observation(interface_type-Value, obs(interface_type, Answer)) :-
+    ( Value == desktop ; Value == "desktop" ), !, Answer = desktop.
+pair_observation(interface_type-Value, obs(interface_type, Answer)) :-
+    ( Value == mobile ; Value == "mobile" ), !, Answer = mobile.
 pair_observation(Key-_, obs(Key, unknown)).
+
+selected_type(Facts, Type) :-
+    memberchk(obs(interface_type,Type), Facts),
+    interface_type(Type,_).
+
+required_features(Type, Id, Base, Required) :-
+    ( Type == web -> Extras = []
+    ; findall(Key, extra_gate(Id,native,Key), Extras) ),
+    append(Base, Extras, Required).
 
 all_features_yes([], _).
 all_features_yes([Key|Rest], Facts) :-
@@ -76,11 +91,17 @@ all_features_yes([Key|Rest], Facts) :-
 % Data-driven applicability is the first inference layer. Issue rules form
 % the second layer and recommendations the third layer.
 inference(Facts, applicable(Id), applicability(Id), Evidence) :-
-    criterion(Id,_,_,_,_,Features,_,_,_,_,_),
+    criterion(Id,_,_,_,_,Base,_,_,_,_,_),
+    selected_type(Facts, Type),
+    required_features(Type, Id, Base, Features),
     all_features_yes(Features, Facts),
-    findall(obs(Key,yes), member(Key,Features), Evidence).
-inference(Facts, not_applicable(Id), applicability(Id), [obs(Key,no)]) :-
-    criterion(Id,_,_,_,_,Features,_,_,_,_,_),
+    findall(obs(Key,yes), member(Key,Features), FeatureEvidence),
+    Evidence = [obs(interface_type,Type)|FeatureEvidence].
+inference(Facts, not_applicable(Id), applicability(Id),
+          [obs(interface_type,Type),obs(Key,no)]) :-
+    criterion(Id,_,_,_,_,Base,_,_,_,_,_),
+    selected_type(Facts, Type),
+    required_features(Type, Id, Base, Features),
     once((member(Key, Features), memberchk(obs(Key,no), Facts))).
 inference(Facts, issue(Id), Rule, Evidence) :-
     issue_rule(Rule, Id, Facts, Evidence).
@@ -129,16 +150,22 @@ count_status(Results, Status, Count) :-
 has_status(Status, Result) :- Result.status == Status.
 
 result_dict(Id, Observations, Facts, Trace, Result) :-
-    criterion(Id, Number, Title, Level, Group, Features, CheckKey,
+    criterion(Id, Number, Title, Level, Group, Base, CheckKey,
               Question, _Help, Advice, Fragment),
+    ( selected_type(Observations, Type)
+    -> required_features(Type, Id, Base, Features)
+    ;  Type = unknown, Features = Base ),
     status(Id, CheckKey, Observations, Facts, Status),
     status_explanation(Status, Id, Features, CheckKey, Observations,
                        Trace, Explanation, RuleId, Evidence),
     format(string(Source), 'https://www.w3.org/TR/WCAG22/#~w', [Fragment]),
+    ( ( Type == web ; Type == unknown ) -> Guidance = ""
+    ; Guidance = "https://www.w3.org/TR/wcag2ict-22/" ),
     Result = _{ key:Id, number:Number, title:Title, level:Level,
                 group:Group, question:Question, status:Status,
                 rule_id:RuleId, explanation:Explanation,
-                evidence:Evidence, advice:Advice, source:Source }.
+                evidence:Evidence, advice:Advice, source:Source,
+                guidance:Guidance }.
 
 status(Id, _, _, Facts, possible_issue) :- memberchk(issue(Id), Facts), !.
 status(Id, _, _, Facts, not_applicable) :- memberchk(not_applicable(Id), Facts), !.
@@ -161,13 +188,17 @@ status_explanation(no_issue_reported, _, _, CheckKey, _, _, Explanation, '', Evi
     observation_label(CheckKey, Label),
     format(string(Explanation), 'This check applies and you answered Yes to "~w". No issue was reported for this check.', [Label]),
     Evidence = [Explanation].
+status_explanation(needs_review, _, _, _, Obs, _,
+                   'Choose the interface type before evaluating these checks.', '', []) :-
+    \+ selected_type(Obs,_), !.
 status_explanation(needs_review, _, Features, CheckKey, Obs, _, Explanation, '', Evidence) :-
     ( member(Key, Features), \+ memberchk(obs(Key,yes), Obs) -> true
     ; Key = CheckKey ),
     observation_label(Key, Label),
-    format(string(Explanation), 'Answer "~w" after inspecting the page to decide this check.', [Label]),
+    format(string(Explanation), 'Answer "~w" after inspecting the interface to decide this check.', [Label]),
     Evidence = [Explanation].
 
+observation_label(interface_type, 'Interface type') :- !.
 observation_label(Key, Label) :- feature(Key, Label, _), !.
 observation_label(Key, Label) :- criterion(_,_,_,_,_,_,Key,Label,_,_,_), !.
 observation_label(Key, Label) :- atom_string(Key, Label).
@@ -192,10 +223,12 @@ trace_dict(step(Rule,Conclusion,Premises), Item) :-
 % applicability subgoal from the observations before trying its issue rule.
 prove_issue(Id, AnswerDict, Proof) :-
     observations(AnswerDict, Observations),
-    criterion(Id, Number, Title, _, _, Features, _, _, _, _, _),
-    ( prove_applicable(Features, Observations, FeatureProof),
+    criterion(Id, Number, Title, _, _, Base, _, _, _, _, _),
+    ( selected_type(Observations, Type),
+      required_features(Type, Id, Base, Features),
+      prove_applicable(Features, Observations, FeatureProof),
       issue_rule(Rule, Id, [applicable(Id)|Observations], RuleProof)
-    -> append(FeatureProof, RuleProof, RawEvidence),
+    -> append([obs(interface_type,Type)|FeatureProof], RuleProof, RawEvidence),
        sort(RawEvidence, Premises),
        maplist(evidence_label, Premises, Evidence),
        Proof = _{criterion:Number, title:Title, provable:true,

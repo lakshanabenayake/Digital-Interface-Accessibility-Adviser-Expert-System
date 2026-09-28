@@ -5,7 +5,7 @@
 :- begin_tests(accessibility_adviser).
 
 % These fixtures are deliberately independent of the engine's rule clauses.
-% Each tests one published criterion with the page feature present and the
+% Each tests one published criterion with the interface feature present and the
 % relevant observation answered No.
 issue_case(c111, r01, [informative_images-yes, alt_text-no]).
 issue_case(c131, r02, [visual_structure-yes, programmatic_structure-no]).
@@ -17,28 +17,27 @@ issue_case(c1410, r07, [reflow_ok-no]).
 issue_case(c1411, r08, [visual_controls-yes, nontext_contrast_ok-no]).
 issue_case(c211, r09, [interactive_controls-yes, keyboard_operable-no]).
 issue_case(c212, r10, [focusable_controls-yes, focus_can_leave-no]).
-issue_case(c242, r11, [page_title_descriptive-no]).
+issue_case(c242, r11, [view_title_descriptive-no]).
 issue_case(c243, r12, [focusable_controls-yes, focus_order_ok-no]).
 issue_case(c244, r13, [links-yes, link_purpose_clear-no]).
 issue_case(c246, r14, [headings_or_labels-yes, headings_labels_descriptive-no]).
 issue_case(c247, r15, [focusable_controls-yes, focus_visible-no]).
 issue_case(c253, r16, [visibly_labelled_controls-yes, name_contains_label-no]).
-issue_case(c311, r17, [page_language_set-no]).
+issue_case(c311, r17, [interface_language_exposed-no]).
 issue_case(c331, r18, [auto_detected_errors-yes, errors_identified-no]).
 issue_case(c332, r19, [input_fields-yes, inputs_labelled-no]).
 issue_case(c333, r20, [auto_detected_errors-yes, correction_known-yes,
                        suggestion_safe-yes, correction_suggested-no]).
 
 test(knowledge_base_has_required_counts) :-
-    knowledge_counts(20, DomainFacts, _),
-    DomainFacts >= 20,
+    knowledge_counts(20, 50, _),
     issue_rule_count(20).
 
 test(all_20_rules_fire_in_their_individual_case) :-
     findall(Id, issue_case(Id,_,_), Cases),
     length(Cases, 20),
     forall(issue_case(Id, Rule, Pairs),
-           ( dict_create(Answers, answers, Pairs),
+           ( dict_create(Answers, answers, [interface_type-web|Pairs]),
              evaluate(Answers, Output),
              member(Result, Output.results), Result.key == Id,
              Result.status == possible_issue,
@@ -50,30 +49,30 @@ test(unknown_answers_are_not_counted_as_passes) :-
     Output.counts.no_issue_reported == 0.
 
 test(absent_feature_is_not_applicable) :-
-    evaluate(_{informative_images:no, alt_text:no}, Output),
+    evaluate(_{interface_type:web, informative_images:no, alt_text:no}, Output),
     once((member(Result, Output.results), Result.key == c111)),
     Result.status == not_applicable,
     Output.counts.possible_issue == 0.
 
 test(answered_yes_reports_no_issue_for_that_check) :-
-    evaluate(_{informative_images:yes, alt_text:yes}, Output),
+    evaluate(_{interface_type:web, informative_images:yes, alt_text:yes}, Output),
     once((member(Result, Output.results), Result.key == c111)),
     Result.status == no_issue_reported.
 
 test(multiple_independent_findings) :-
-    evaluate(_{informative_images:yes, alt_text:no,
+    evaluate(_{interface_type:web, informative_images:yes, alt_text:no,
                interactive_controls:yes, keyboard_operable:no,
-               page_title_descriptive:no}, Output),
+               view_title_descriptive:no}, Output),
     Output.counts.possible_issue == 3.
 
 test(error_suggestion_exception_does_not_flag) :-
-    evaluate(_{auto_detected_errors:yes, correction_known:yes,
+    evaluate(_{interface_type:mobile, auto_detected_errors:yes, correction_known:yes,
                suggestion_safe:no, correction_suggested:no}, Output),
     once((member(Result, Output.results), Result.key == c333)),
     Result.status == not_applicable.
 
 test(applicability_precedes_issue_in_forward_trace) :-
-    evaluate(_{informative_images:yes, alt_text:no}, Output),
+    evaluate(_{interface_type:web, informative_images:yes, alt_text:no}, Output),
     once((nth0(AppIndex, Output.trace, AppStep),
           AppStep.conclusion == "applicable(c111)")),
     once((nth0(IssueIndex, Output.trace, IssueStep),
@@ -81,13 +80,57 @@ test(applicability_precedes_issue_in_forward_trace) :-
     AppIndex < IssueIndex.
 
 test(backward_proof_succeeds_with_supporting_facts) :-
-    prove_issue(c111, _{informative_images:yes, alt_text:no}, Proof),
+    prove_issue(c111, _{interface_type:desktop, informative_images:yes, alt_text:no}, Proof),
     Proof.provable == true,
     Proof.rule == r01.
 
 test(backward_proof_fails_when_condition_is_absent) :-
-    prove_issue(c111, _{informative_images:no, alt_text:no}, Proof),
+    prove_issue(c111, _{interface_type:desktop, informative_images:no, alt_text:no}, Proof),
     Proof.provable == false.
+
+test(type_is_required_even_for_unconditional_checks) :-
+    evaluate(_{view_title_descriptive:no}, Output),
+    Output.counts.possible_issue == 0,
+    once((member(Result, Output.results), Result.key == c242)),
+    Result.status == needs_review.
+
+test(web_title_does_not_need_native_title_property) :-
+    evaluate(_{interface_type:web, title_property_supported:no,
+               view_title_descriptive:no}, Output),
+    once((member(Result, Output.results), Result.key == c242)),
+    Result.status == possible_issue,
+    Result.rule_id == r11.
+
+test(native_title_requires_platform_support) :-
+    evaluate(_{interface_type:desktop, title_property_supported:no,
+               view_title_descriptive:no}, Output),
+    once((member(Result, Output.results), Result.key == c242)),
+    Result.status == not_applicable.
+
+test(native_title_rule_fires_with_platform_support) :-
+    evaluate(_{interface_type:mobile, title_property_supported:yes,
+               view_title_descriptive:no}, Output),
+    once((member(Result, Output.results), Result.key == c242)),
+    Result.status == possible_issue,
+    Result.rule_id == r11.
+
+test(native_keyboard_gate_prevents_false_finding) :-
+    evaluate(_{interface_type:mobile, interactive_controls:yes,
+               keyboard_service:no, keyboard_operable:no}, Output),
+    once((member(Result, Output.results), Result.key == c211)),
+    Result.status == not_applicable.
+
+test(native_keyboard_rule_fires_when_service_exists) :-
+    evaluate(_{interface_type:desktop, interactive_controls:yes,
+               keyboard_service:yes, keyboard_operable:no}, Output),
+    once((member(Result, Output.results), Result.key == c211)),
+    Result.status == possible_issue,
+    Result.rule_id == r09.
+
+test(nonweb_results_link_to_interpretation_guidance) :-
+    evaluate(_{interface_type:desktop, interface_language_exposed:no}, Output),
+    once((member(Result, Output.results), Result.key == c311)),
+    Result.guidance == "https://www.w3.org/TR/wcag2ict-22/".
 
 test(source_urls_and_rule_ids_are_unique) :-
     findall(Id, criterion(Id,_,_,_,_,_,_,_,_,_,_), Ids),

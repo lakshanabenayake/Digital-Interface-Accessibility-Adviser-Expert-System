@@ -1,92 +1,60 @@
-# Website Accessibility Adviser Expert System
+# Digital Interface Accessibility Adviser Expert System
 
-This project is a read-only expert system that guides a person through an accessibility review of one webpage. It asks what is present on the page, checks the person's observations against **20 selected WCAG 2.2 Level A and AA success criteria**, and explains the results.
+A read-only expert system for a **guided review of one website, desktop application, or mobile application**. It asks a human reviewer what the interface contains and how it behaves, applies 20 explicit Prolog rules, then explains possible accessibility issues and suggested actions.
 
-## What is website accessibility?
+## What is digital interface accessibility?
 
-Website accessibility means designing and building websites so people with disabilities can perceive the content, understand it, navigate it, and interact with it. For example, a person who cannot see an image may need a meaningful text alternative; a person who cannot use a mouse may need to operate every function with a keyboard. Readable contrast, clear links, visible keyboard focus, and understandable form errors also matter. See the [W3C introduction to web accessibility](https://www.w3.org/WAI/fundamentals/accessibility-intro/).
+An accessible interface lets people with different visual, hearing, physical, and cognitive abilities perceive information and operate software. Examples include meaningful text alternatives for informative icons, readable contrast, keyboard operation where supported, clear labels, visible focus, and understandable error messages. The [W3C introduction to accessibility](https://www.w3.org/WAI/fundamentals/accessibility-intro/) explains why these features matter.
 
-## What problem does this system address?
+## What problem does this adviser solve?
 
-Accessibility problems can be easy to overlook when a webpage looks and works normally for its developer. A reviewer also has to decide which accessibility requirements apply to the page and understand what a failed check means. Reading the full standard for every initial review can be difficult for someone learning the subject.
+Accessibility problems can be overlooked when an interface appears usable to its developer. A reviewer must also decide which checks apply: a screen with no links does not need a link-purpose check, and a native app on a platform without a keyboard service does not need a keyboard-operation finding. This adviser structures that first review and shows the reasoning behind each result.
 
-The adviser provides a structured first review. It turns 20 selected requirements from the [Web Content Accessibility Guidelines (WCAG) 2.2](https://www.w3.org/TR/WCAG22/) into questions, applies explicit rules to the answers, and points the reviewer to possible problems and relevant guidance. It helps students, developers, and testers learn *why* a page feature may need attention.
+The rules are based on **20 selected Level A and AA criteria** in [WCAG 2.2](https://www.w3.org/TR/WCAG22/). The [W3C WCAG2ICT Group Note](https://www.w3.org/TR/wcag2ict-22/) guides how those criteria are interpreted for non-web software. WCAG2ICT is informative guidance, not a separate conformance standard. Every rule and its source are listed in [RULES_AND_SOURCES.md](RULES_AND_SOURCES.md).
 
-## What does the expert system do?
+## What does the system do?
 
-1. **Collects observations:** You inspect a webpage and answer Yes, No, or Not sure to questions about its features and accessibility behaviour.
-2. **Checks applicability:** It works out whether each selected WCAG check applies. For example, a check about informative images does not apply if the page has no informative images.
-3. **Applies rules:** Its Prolog inference engine uses 20 explicit IF–THEN issue rules to flag possible problems. It also handles absent features and uncertain answers.
-4. **Explains the result:** It shows the rule and answers behind each finding, suggests an action, and links to the exact W3C success criterion. You can also ask it to prove why a particular issue was flagged.
+1. You choose **website/web app**, **desktop app**, or **mobile app** and inspect one interface yourself.
+2. You answer Yes, No, or Not sure about features and accessibility behaviour.
+3. The inference engine decides which checks apply. Native software has extra gates for platform keyboard and window/screen title support.
+4. Twenty IF–THEN issue rules identify possible problems. The interface gives a suggested action, links to W3C sources, and shows the forward-chaining trace.
+5. You can ask why a selected issue was flagged; a backward-chaining proof lists its supporting answers.
 
-For example, if an informative image is present but its text alternative does not convey its meaning, the system flags a **possible issue with WCAG 1.1.1** and suggests an equivalent text alternative.
+Results are **Possible issue**, **No issue reported**, **Not applicable**, or **Needs review**. Unknown answers are never treated as passes.
 
-**Scope:** This is a guided preliminary review, not an automatic website scanner. It does not fetch, change, or store the target webpage. It covers 20 selected criteria rather than the whole of WCAG 2.2. A “No issue reported” result means only that you answered Yes to that particular question; the system does not establish WCAG conformance. Human verification against the linked W3C criterion is still needed.
+**Scope:** This is a preliminary manual review, not an automatic scanner. It does not fetch, change, or store the target interface. It does not assess physical hardware controls or all of WCAG. A “No issue reported” result only reflects one question and does not establish conformance. Verify findings against the linked W3C text.
 
-## Requirements
+## Run it
 
-- On Windows with Git Bash: no separate install is required; `runtime/swipl/` includes a portable SWI-Prolog runtime.
-- On macOS or Linux: install [SWI-Prolog](https://www.swi-prolog.org/Download.html).
-- A current web browser
-
-The project has no JavaScript packages or build step. Internet access is needed only to open the W3C reference links; the adviser itself runs locally.
-
-## Run the adviser
-
-In the Git Bash terminal already open at `/d/ExpertSystem`, run **only this command**:
+On this Windows computer, the project has a local portable SWI-Prolog runtime in `runtime/swipl/`. From Git Bash in `/d/ExpertSystem`, run:
 
 ```bash
 bash run.sh
 ```
 
-Open [http://localhost:8081/](http://localhost:8081/) in a browser. Port 8080 is already used by another service on this computer. If port 8081 is in use later, run `bash run.sh 8082` and open port 8082 instead. Press **Ctrl+C** in the terminal to stop the server. The `bash` line is the command; the word after the opening code fence is only a display label.
+Open [http://localhost:8081/](http://localhost:8081/). Port 8080 is used by another service on this computer. If necessary, choose another port with `bash run.sh 8082`. Press **Ctrl+C** to stop the server. On macOS or Linux, install [SWI-Prolog](https://www.swi-prolog.org/Download.html); the same script will use it. The portable runtime is excluded from Git because it is a large local binary, so a fresh clone needs a SWI-Prolog installation.
 
-On macOS or Linux, the same script uses an installed `swipl` executable.
+### Example review
 
-### How to use it
+Choose **Desktop application**. If the app has interactive controls, its platform supplies a keyboard interface, and one control cannot be operated through it, answer Yes to the **Interactive functions** and **Platform keyboard service** feature questions and No to **2.1.1 Keyboard**. Rule `r09` produces a possible issue and shows the answers that support it.
 
-1. Choose one webpage to review. Inspect it manually, including keyboard navigation and any relevant form errors.
-2. In **Describe the webpage**, mark whether each feature exists. Use **Not sure** if uncertain.
-3. In **Check what you observed**, answer each relevant criterion question. A **No** answer can trigger a possible issue when the criterion applies.
-4. Select **Show results**. Review the issue cards, suggested actions, W3C links, and the expandable forward-chaining trace.
-5. Select a criterion under **Ask why a criterion was flagged** and choose **Check this goal** to run the backward-chaining proof.
-6. Select **Clear answers** to review a different page.
-
-The four result states are:
-
-| State | Meaning |
-| --- | --- |
-| Possible issue | The page feature applies and you answered No to the check. Verify it against the full WCAG criterion. |
-| No issue reported | The page feature applies and you answered Yes to this check. |
-| Not applicable | You answered No to a required page feature. |
-| Needs review | An applicability answer or the check answer is missing or Not sure. |
-
-### Example
-
-For a page with an informative image whose alternative text does not convey its meaning, answer **Yes** to “Informative non-text content” and **No** to WCAG 1.1.1. The adviser reports a possible issue under rule `r01`, recommends an equivalent text alternative, and shows the supporting answers.
-
-## Run the tests
+## Run tests
 
 ```bash
 bash test.sh
 ```
 
-The test suite checks the 20 rules individually, unknown and non-applicable answers, multiple findings, rule order, backward proof, and source identifiers. A successful run exits with code 0.
+The 18 automated tests check all 20 issue rules individually, unknown answers, feature applicability, desktop and mobile gates, backward proof, and source identifiers.
 
-## Project files
+## Files
 
 | File | Purpose |
 | --- | --- |
-| `knowledge_base.pl` | 20 sourced criterion facts, 15 page-feature facts, and six numeric facts. |
-| `inference_engine.pl` | 20 explicit issue rules, forward chaining, explanations, and backward proof. |
-| `web_server.pl` | Local HTTP routes and JSON API. |
-| `web/` | Browser interface. |
-| `runtime/swipl/` | Portable Windows SWI-Prolog runtime. |
-| `run.sh`, `test.sh` | Git Bash launchers for the adviser and tests. |
-| `tests.pl` | Automated cases. |
-| `RULES_AND_SOURCES.md` | Full rule-to-source mapping. |
-| `REPORT.md` | Assignment report, design, and test evidence. |
-
-## Source and scope
-
-The knowledge source is the [W3C Web Content Accessibility Guidelines 2.2](https://www.w3.org/TR/WCAG22/). Each rule maps to a specific success criterion; see [RULES_AND_SOURCES.md](RULES_AND_SOURCES.md). The plain-language prompts intentionally simplify some criteria and exceptions. Consult the linked normative text before making a formal accessibility judgment.
+| `knowledge_base.pl` | 20 criterion facts, 17 feature facts, six numeric facts, three interface types, and four native gates. |
+| `inference_engine.pl` | 20 explicit issue rules, forward chaining, result explanations, and backward proof. |
+| `web_server.pl` | Local HTTP server and JSON API. |
+| `web/` | Browser questionnaire and result view. |
+| `tests.pl` | Automated test cases. |
+| `RULES_AND_SOURCES.md` | Rule-to-source mapping and interpretation notes. |
+| `REPORT.md` | Assignment report, architecture, knowledge engineering, and test evidence. |
+| `run.sh`, `test.sh` | Git Bash launchers. |
