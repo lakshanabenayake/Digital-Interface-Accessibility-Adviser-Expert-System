@@ -17,28 +17,51 @@ The rules are based on **20 selected Level A and AA criteria** in [WCAG 2.2](htt
 1. You choose **website/web app**, **desktop app**, or **mobile app** and inspect one interface yourself.
 2. You answer Yes, No, or Not sure about features and accessibility behaviour.
 3. The inference engine decides which checks apply. Native software has extra gates for platform keyboard and window/screen title support.
-4. Twenty IF–THEN issue rules identify possible problems. The interface gives a suggested action, links to W3C sources, and shows the forward-chaining trace.
+4. Twenty IF-THEN issue rules identify possible problems. The interface gives a suggested action, links to W3C sources, and shows the forward-chaining trace.
 5. You can ask why a selected issue was flagged; a backward-chaining proof lists its supporting answers.
 
 Results are **Possible issue**, **No issue reported**, **Not applicable**, or **Needs review**. Unknown answers are never treated as passes.
 
 **Scope:** This is a preliminary manual review, not an automatic scanner. It does not fetch, change, or store the target interface. It does not assess physical hardware controls or all of WCAG. A “No issue reported” result only reflects one question and does not establish conformance. Verify findings against the linked W3C text.
 
+## Requirements
+
+- SWI-Prolog 9.0 or later: <https://www.swi-prolog.org/Download.html>
+- A modern web browser
+
+The HTTP and unit-testing libraries used by this project are included with a standard SWI-Prolog installation. No JavaScript packages or database are required.
+
 ## Run it
 
-On this Windows computer, the project has a local portable SWI-Prolog runtime in `runtime/swipl/`. From Git Bash in `/d/ExpertSystem`, run:
+Download or extract the project, open a terminal in its root folder, and use one of these commands.
+
+Windows PowerShell:
+
+```powershell
+.\run.ps1
+```
+
+Git Bash, macOS, or Linux:
 
 ```bash
 bash run.sh
 ```
 
-Open [http://localhost:8081/](http://localhost:8081/). Port 8080 is used by another service on this computer. If necessary, choose another port with `bash run.sh 8082`. Press **Ctrl+C** to stop the server. On macOS or Linux, install [SWI-Prolog](https://www.swi-prolog.org/Download.html); the same script will use it. The portable runtime is excluded from Git because it is a large local binary, so a fresh clone needs a SWI-Prolog installation.
+Open <http://localhost:8080/>. If port 8080 is already in use, choose another port, for example `bash run.sh 8081` or `.\run.ps1 -Port 8081`, and open that port in the browser. Press **Ctrl+C** in the terminal to stop the server.
 
 ### Example review
 
 Choose **Desktop application**. If the app has interactive controls, its platform supplies a keyboard interface, and one control cannot be operated through it, answer Yes to the **Interactive functions** and **Platform keyboard service** feature questions and No to **2.1.1 Keyboard**. Rule `r09` produces a possible issue and shows the answers that support it.
 
 ## Run tests
+
+Windows PowerShell:
+
+```powershell
+.\test.ps1
+```
+
+Git Bash, macOS, or Linux:
 
 ```bash
 bash test.sh
@@ -57,4 +80,6 @@ The 18 automated tests check all 20 issue rules individually, unknown answers, f
 | `tests.pl` | Automated test cases. |
 | `RULES_AND_SOURCES.md` | Rule-to-source mapping and interpretation notes. |
 | `REPORT.md` | Assignment report, architecture, knowledge engineering, and test evidence. |
-| `run.sh`, `test.sh` | Git Bash launchers. |
+| `run.ps1`, `test.ps1` | Windows PowerShell launchers. |
+| `run.sh`, `test.sh` | Git Bash, macOS, and Linux launchers. |
+| `output/pdf/` | Final assignment report in PDF format. |

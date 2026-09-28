@@ -13,5 +13,5 @@ else
   exit 1
 fi
 
-port="${1:-8081}"
+port="${1:-8080}"
 exec "$prolog" -q -s web_server.pl -- "$port"
