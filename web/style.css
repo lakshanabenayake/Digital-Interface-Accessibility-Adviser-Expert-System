@@ -67,12 +67,17 @@ button:disabled { opacity: .6; cursor: wait; }
 .source-link, .guidance-link { font-weight: 650; }
 .guidance-link { display: block; margin-top: .35rem; }
 .goal-panel, .trace-panel { border-top: 1px solid #d9e2ea; margin-top: 1.7rem; padding-top: 1.2rem; }
+.goal-panel { border: 2px solid #9aadd0; border-radius: .5rem; margin: 1rem 0 1.5rem; padding: 1rem; background: #f7f9fd; }
 .goal-panel h3 { margin: 0 0 .2rem; }
 .goal-panel p { margin-top: .3rem; }
 .goal-controls { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; }
 .goal-controls select { width: min(100%, 390px); }
 #proof { margin-top: .8rem; }
 .proof-result { font-weight: 650; }
+.backward-proof { margin-bottom: .7rem; padding-left: 1.5rem; }
+.backward-proof > li { margin: .45rem 0; }
+.proof-premises { margin-top: .35rem; }
+.proof-explanation { color: var(--muted); }
 .trace-panel summary { cursor: pointer; font-weight: 700; }
 .trace-step { margin: .5rem 0; overflow-wrap: anywhere; }
 .trace-step p { margin: .1rem 0; color: var(--muted); }

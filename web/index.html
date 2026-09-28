@@ -64,18 +64,19 @@
     <section id="results" class="section results hidden" aria-labelledby="results-title" aria-live="polite">
       <div class="section-heading"><div><p class="step">Step 4</p><h2 id="results-title">Your results</h2></div></div>
       <div id="summary"></div>
-      <div id="findings"></div>
 
       <div class="goal-panel">
-        <h3>Ask why a criterion was flagged</h3>
-        <p>This runs a goal-directed, backward-chaining check using your answers.</p>
+        <h3>Backward-chaining proof</h3>
+        <p>The system starts with the goal of proving an issue, selects its rule, and checks whether your answers support every required premise.</p>
         <div class="goal-controls">
           <label for="goal-select">Criterion to prove</label>
           <select id="goal-select"></select>
-          <button class="secondary" type="button" id="prove-button">Check this goal</button>
+          <button class="secondary" type="button" id="prove-button">Run backward chaining</button>
         </div>
         <div id="proof" aria-live="polite"></div>
       </div>
+
+      <div id="findings"></div>
 
       <details class="trace-panel">
         <summary>Show the forward-chaining rule trace</summary>

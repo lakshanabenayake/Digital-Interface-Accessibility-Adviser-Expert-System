@@ -186,7 +186,47 @@ function renderResults(data) {
     if (step.premises.length) item.append(element("p", "", step.premises.join("; ")));
     traceHost.append(item);
   }
+  const firstIssue = data.results.find(item => item.status === "possible_issue");
+  if (firstIssue) goalSelect.value = firstIssue.key;
+  showBackwardProof();
   resultsSection.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+async function showBackwardProof() {
+  proofHost.replaceChildren();
+  if (!lastAnswers) {
+    proofHost.append(element("p", "", "Show results first to save the answers for this goal."));
+    return;
+  }
+  try {
+    const proof = await postJson("/api/prove", {
+      criterion: goalSelect.value,
+      answers: lastAnswers
+    });
+
+    proofHost.append(element("p", "proof-result",
+      proof.provable
+        ? `Goal proved: ${proof.criterion} ${proof.title} is a possible issue.`
+        : `Goal not proved: ${proof.criterion} ${proof.title} is not established as a possible issue.`));
+
+    const steps = element("ol", "backward-proof");
+    steps.append(element("li", "", `Goal: prove that criterion ${proof.criterion} has a possible issue.`));
+    if (proof.provable) {
+      steps.append(element("li", "", `Rule selected: ${proof.rule}.`));
+      const premiseStep = element("li", "", "Required premises checked against the supplied facts:");
+      const premises = element("ul", "proof-premises");
+      for (const premise of proof.premises) premises.append(element("li", "", premise));
+      premiseStep.append(premises);
+      steps.append(premiseStep);
+      steps.append(element("li", "", `Conclusion: all premises succeeded, so rule ${proof.rule} proves the goal.`));
+    } else {
+      steps.append(element("li", "", "Rule search: the system could not satisfy every required premise from the supplied facts."));
+      steps.append(element("li", "", "Conclusion: the goal cannot be proved with the current answers."));
+    }
+    proofHost.append(steps, element("p", "proof-explanation", proof.explanation));
+  } catch (error) {
+    proofHost.append(element("p", "", `Could not check the goal: ${error.message}`));
+  }
 }
 
 form.addEventListener("submit", async event => {
@@ -216,28 +256,7 @@ form.addEventListener("reset", () => {
   }, 0);
 });
 
-document.getElementById("prove-button").addEventListener("click", async () => {
-  proofHost.replaceChildren();
-  if (!lastAnswers) {
-    proofHost.append(element("p", "", "Show results first to save the answers for this goal."));
-    return;
-  }
-  try {
-    const proof = await postJson("/api/prove", {
-      criterion: goalSelect.value,
-      answers: lastAnswers
-    });
-    proofHost.append(element("p", "proof-result",
-      `${proof.provable ? "Proved" : "Not proved"}: ${proof.criterion} ${proof.title}. ${proof.explanation}`));
-    if (proof.premises.length) {
-      const list = element("ul", "");
-      for (const premise of proof.premises) list.append(element("li", "", premise));
-      proofHost.append(list);
-    }
-  } catch (error) {
-    proofHost.append(element("p", "", `Could not check the goal: ${error.message}`));
-  }
-});
+document.getElementById("prove-button").addEventListener("click", showBackwardProof);
 
 fetch("/api/knowledge")
   .then(response => { if (!response.ok) throw new Error("Knowledge base unavailable"); return response.json(); })

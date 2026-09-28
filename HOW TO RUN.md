@@ -84,9 +84,10 @@ Then open <http://localhost:8081/>.
 6. Use **Not sure** whenever you have not verified an answer. The system will mark that item as needing review instead of treating it as a pass.
 7. Select **Show results**.
 8. Read the status, explanation, suggested action, and source link for each criterion.
-9. Expand **Show the forward-chaining rule trace** to see the conclusions produced from the supplied facts.
-10. To examine backward chaining, choose a criterion under **Ask why a criterion was flagged** and select **Check this goal**.
-11. Select **Clear answers** before beginning a different review.
+9. The **Backward-chaining proof** automatically checks the first possible issue. Its numbered steps show the goal, selected rule, required premises, and conclusion.
+10. To check another criterion, choose it under **Criterion to prove** and select **Run backward chaining**.
+11. Expand **Show the forward-chaining rule trace** to see the conclusions produced from the supplied facts.
+12. Select **Clear answers** before beginning a different review.
 
 ## 6. Understanding the Results
 
