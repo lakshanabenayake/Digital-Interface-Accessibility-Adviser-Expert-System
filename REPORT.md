@@ -2,13 +2,9 @@
 
 ## Expert System Assignment Report
 
-Student name: ______________________________
+Full name: Abenayake D.M.R.L.
 
-Student ID: ________________________________
-
-Module: Expert Systems
-
-Submission date: ___________________________
+Student ID: 224002L
 
 ## Abstract
 

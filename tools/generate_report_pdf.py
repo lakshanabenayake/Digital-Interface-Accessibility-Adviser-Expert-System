@@ -173,10 +173,8 @@ def build_story(text: str, available: float) -> list:
         Paragraph("Expert System Assignment Report", styles["CoverSubtitle"]),
         Spacer(1, 18 * mm),
         Table([
-            ["Student name", "______________________________"],
-            ["Student ID", "______________________________"],
-            ["Module", "Expert Systems"],
-            ["Submission date", "______________________________"],
+            ["Full name", "Abenayake D.M.R.L."],
+            ["Student ID", "224002L"],
         ], colWidths=[42 * mm, 82 * mm], style=TableStyle([
             ("FONTNAME", (0, 0), (0, -1), "Helvetica-Bold"),
             ("FONTNAME", (1, 0), (1, -1), "Helvetica"),
@@ -263,7 +261,7 @@ def main() -> None:
         leftMargin=left, rightMargin=right,
         topMargin=18 * mm, bottomMargin=19 * mm,
         title="Digital Interface Accessibility Adviser - Expert System Assignment Report",
-        author="Student",
+        author="Abenayake D.M.R.L.",
         subject="Expert System Assignment",
     )
     story = build_story(SOURCE.read_text(encoding="utf-8"), page_width - left - right)
