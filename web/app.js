@@ -138,6 +138,23 @@ function resultLabel(status) {
   }[status] || status;
 }
 
+function observationLabel(key) {
+  if (key === "interface_type") return "Interface type";
+  const feature = knowledge.features.find(item => item.key === key);
+  if (feature) return feature.label;
+  const criterion = knowledge.criteria.find(item => item.check_key === key);
+  if (criterion) return `${criterion.number} ${criterion.title}`;
+  return key.replaceAll("_", " ");
+}
+
+function observationValue(key, value) {
+  if (key === "interface_type") {
+    const type = knowledge.interface_types.find(item => item.key === value);
+    return type ? type.label : value;
+  }
+  return value === "yes" ? "Yes" : value === "no" ? "No" : value;
+}
+
 function renderResults(data) {
   resultsSection.classList.remove("hidden");
   summaryHost.replaceChildren();
@@ -180,11 +197,35 @@ function renderResults(data) {
     findingsHost.append(article);
   }
 
+  const suppliedFacts = Object.entries(lastAnswers)
+    .filter(([, value]) => value !== "unknown");
+  if (suppliedFacts.length) {
+    const inputStep = element("li", "trace-step trace-input");
+    inputStep.append(element("strong", "", "Initial facts supplied by the user"));
+    const facts = element("ul", "trace-facts");
+    for (const [key, value] of suppliedFacts) {
+      facts.append(element("li", "", `${observationLabel(key)} = ${observationValue(key, value)}`));
+    }
+    inputStep.append(facts);
+    traceHost.append(inputStep);
+  } else {
+    const inputStep = element("li", "trace-step trace-empty");
+    inputStep.append(element("strong", "", "No verified input facts were supplied."));
+    inputStep.append(element("p", "", "Choose an interface type and answer the relevant questions, then select Show results again."));
+    traceHost.append(inputStep);
+  }
+
   for (const step of data.trace) {
     const item = element("li", "trace-step");
-    item.append(element("strong", "", `${step.rule}: ${step.conclusion}`));
+    item.append(element("strong", "", `Rule fired - ${step.rule}: ${step.conclusion}`));
     if (step.premises.length) item.append(element("p", "", step.premises.join("; ")));
     traceHost.append(item);
+  }
+  if (!data.trace.length) {
+    const noRuleStep = element("li", "trace-step trace-empty");
+    noRuleStep.append(element("strong", "", "No rule conclusions were derived."));
+    noRuleStep.append(element("p", "", "The current facts do not satisfy all premises of an applicability or issue rule."));
+    traceHost.append(noRuleStep);
   }
   const firstIssue = data.results.find(item => item.status === "possible_issue");
   if (firstIssue) goalSelect.value = firstIssue.key;
