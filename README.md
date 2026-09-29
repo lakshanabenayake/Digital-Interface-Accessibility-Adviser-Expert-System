@@ -10,7 +10,7 @@ An accessible interface lets people with different visual, hearing, physical, an
 
 Accessibility problems can be overlooked when an interface appears usable to its developer. A reviewer must also decide which checks apply: a screen with no links does not need a link-purpose check, and a native app on a platform without a keyboard service does not need a keyboard-operation finding. This adviser structures that first review and shows the reasoning behind each result.
 
-The rules are based on **20 selected Level A and AA criteria** in [WCAG 2.2](https://www.w3.org/TR/WCAG22/). The [W3C WCAG2ICT Group Note](https://www.w3.org/TR/wcag2ict-22/) guides how those criteria are interpreted for non-web software. WCAG2ICT is informative guidance, not a separate conformance standard. Every rule and its source are listed in [RULES_AND_SOURCES.md](RULES_AND_SOURCES.md).
+The rules are based on **20 selected Level A and AA criteria** in [WCAG 2.2](https://www.w3.org/TR/WCAG22/). The [W3C WCAG2ICT Group Note](https://www.w3.org/TR/wcag2ict-22/) guides how those criteria are interpreted for non-web software. WCAG2ICT is informative guidance, not a separate conformance standard. The final assignment PDF contains the complete rule-to-source mapping and interpretation notes.
 
 Complete installation and operating instructions are available in [HOW TO RUN.md](HOW%20TO%20RUN.md).
 
@@ -80,9 +80,7 @@ The 18 automated tests check all 20 issue rules individually, unknown answers, f
 | `web_server.pl` | Local HTTP server and JSON API. |
 | `web/` | Browser questionnaire and result view. |
 | `tests.pl` | Automated test cases. |
-| `RULES_AND_SOURCES.md` | Rule-to-source mapping and interpretation notes. |
 | `HOW TO RUN.md` | Separate installation, operation, example, testing, and troubleshooting guide. |
-| `REPORT.md` | Assignment report, architecture, knowledge engineering, and test evidence. |
 | `run.ps1`, `test.ps1` | Windows PowerShell launchers. |
 | `run.sh`, `test.sh` | Git Bash, macOS, and Linux launchers. |
-| `output/pdf/` | Final assignment report in PDF format. |
+| `output/pdf/Digital_Interface_Accessibility_Adviser_Report.pdf` | Complete assignment report, rule sources, knowledge engineering, tests, user manual, and requirement coverage. |

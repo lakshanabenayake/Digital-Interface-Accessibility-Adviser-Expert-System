@@ -20,10 +20,11 @@ from reportlab.platypus import (
     Table,
     TableStyle,
 )
+from reportlab.platypus.tableofcontents import TableOfContents
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "REPORT.md"
+SOURCE = Path(__file__).with_name("report_content.txt")
 OUTPUT = ROOT / "output" / "pdf" / "Digital_Interface_Accessibility_Adviser_Report.pdf"
 
 
@@ -55,6 +56,7 @@ styles.add(ParagraphStyle(
 styles.add(ParagraphStyle(
     name="ReportBody", parent=styles["BodyText"], fontName="Helvetica",
     fontSize=9.3, leading=13.2, alignment=TA_LEFT, spaceAfter=6,
+    allowWidows=0, allowOrphans=0,
 ))
 styles.add(ParagraphStyle(
     name="ReportBullet", parent=styles["ReportBody"], leftIndent=14,
@@ -78,6 +80,41 @@ styles.add(ParagraphStyle(
     name="TableCell", parent=styles["ReportBody"], fontSize=7.2,
     leading=9.2, spaceAfter=0,
 ))
+styles.add(ParagraphStyle(
+    name="TOCTitle", parent=styles["ReportH1"], fontSize=18,
+    leading=22, alignment=TA_CENTER, spaceAfter=14,
+))
+styles.add(ParagraphStyle(
+    name="TOCLevel1", parent=styles["ReportBody"], fontSize=10,
+    leading=14, leftIndent=0, firstLineIndent=0, spaceBefore=3,
+))
+styles.add(ParagraphStyle(
+    name="TOCLevel2", parent=styles["ReportBody"], fontSize=8.8,
+    leading=12, leftIndent=14, firstLineIndent=0, spaceBefore=1,
+    textColor=colors.HexColor("#3F4C59"),
+))
+
+
+class ReportDocTemplate(SimpleDocTemplate):
+    """Collect report headings for the table of contents and PDF outline."""
+
+    def beforeDocument(self) -> None:
+        super().beforeDocument()
+        self._heading_number = 0
+
+    def afterFlowable(self, flowable) -> None:
+        if not isinstance(flowable, Paragraph):
+            return
+        levels = {"ReportH1": 0, "ReportH2": 1}
+        if flowable.style.name not in levels:
+            return
+        self._heading_number += 1
+        level = levels[flowable.style.name]
+        title = flowable.getPlainText()
+        bookmark = f"heading-{self._heading_number}"
+        self.canv.bookmarkPage(bookmark)
+        self.canv.addOutlineEntry(title, bookmark, level=level, closed=False)
+        self.notify("TOCEntry", (level, title, self.page, bookmark))
 
 
 def inline_markup(text: str) -> str:
@@ -186,6 +223,14 @@ def build_story(text: str, available: float) -> list:
         Spacer(1, 28 * mm),
         Paragraph("A rule-based adviser for preliminary accessibility assessment of web, desktop, and mobile software interfaces.", styles["CoverSubtitle"]),
         PageBreak(),
+        Paragraph("Table of Contents", styles["TOCTitle"]),
+    ])
+
+    contents = TableOfContents()
+    contents.levelStyles = [styles["TOCLevel1"], styles["TOCLevel2"]]
+    story.extend([
+        contents,
+        PageBreak(),
     ])
 
     start = next(i for i, line in enumerate(lines) if line.strip() == "## Abstract")
@@ -224,7 +269,11 @@ def build_story(text: str, available: float) -> list:
         if line.startswith("### "):
             flush_paragraph(); story.append(Paragraph(inline_markup(line[4:]), styles["ReportH2"])); i += 1; continue
         if line.startswith("## "):
-            flush_paragraph(); story.append(Paragraph(inline_markup(line[3:]), styles["ReportH1"])); i += 1; continue
+            flush_paragraph()
+            title = line[3:]
+            if title == "References" or title.startswith("Appendix "):
+                story.append(PageBreak())
+            story.append(Paragraph(inline_markup(title), styles["ReportH1"])); i += 1; continue
         if line.startswith("> "):
             flush_paragraph(); story.append(Paragraph(inline_markup(line[2:]), styles["ReportQuote"])); i += 1; continue
         bullet_match = re.match(r"^-\s+(.+)$", line)
@@ -256,7 +305,7 @@ def main() -> None:
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     page_width, _ = A4
     left = right = 18 * mm
-    document = SimpleDocTemplate(
+    document = ReportDocTemplate(
         str(OUTPUT), pagesize=A4,
         leftMargin=left, rightMargin=right,
         topMargin=18 * mm, bottomMargin=19 * mm,
@@ -265,7 +314,7 @@ def main() -> None:
         subject="Expert System Assignment",
     )
     story = build_story(SOURCE.read_text(encoding="utf-8"), page_width - left - right)
-    document.build(story, onFirstPage=footer, onLaterPages=footer)
+    document.multiBuild(story, onFirstPage=footer, onLaterPages=footer)
     print(OUTPUT)
 
 
