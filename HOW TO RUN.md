@@ -26,6 +26,14 @@ If this prints a version number, the installation is ready.
 
 ## 3. Starting the System
 
+### Direct SWI-Prolog Command
+
+The system can also be started directly:
+
+```text
+swipl -q -s web_server.pl -- 8080
+```
+
 ### Windows PowerShell
 
 Open PowerShell in the project folder and run:
@@ -42,14 +50,6 @@ Open a terminal in the project folder and run:
 bash run.sh
 ```
 
-### Direct SWI-Prolog Command
-
-The system can also be started directly:
-
-```text
-swipl -q -s web_server.pl -- 8080
-```
-
 Keep the terminal open while using the system. Open this address in a browser:
 
 <http://localhost:8080/>
@@ -58,7 +58,7 @@ Press **Ctrl+C** in the terminal to stop the server.
 
 ## 4. Using Another Port
 
-If port 8080 is already being used, choose another port.
+If port 8081 is already being used, choose another port.
 
 Windows PowerShell example:
 
